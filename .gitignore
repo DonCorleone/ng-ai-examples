@@ -70,3 +70,5 @@ node_modules/
 .dataconnect
 
 .DS_Store
+vertex-ai-firebase-angular-example/src/environments/environment.ts
+vertex-ai-firebase-angular-example/src/environments/environment.ts
