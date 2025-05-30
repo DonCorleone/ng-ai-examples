@@ -1,3 +1,4 @@
+
 /*!
  * @license
  * Copyright Google LLC All Rights Reserved.
@@ -47,17 +48,32 @@ export class AiService {
             properties: {
               productsToAdd: Schema.array({
                 items: Schema.object({
-                  description: "A single product with its name and price.",
+                  description: "A single product with its name.",
                   properties: {
                     name: Schema.string({
                       description: "The name of the product.",
                     }),
-                    price: Schema.number({
-                      description: "The numerical price of the product.",
+                  },
+                  required: ["name"],
+                }),
+              }),
+            },
+          }) as ObjectSchemaInterface,
+        },
+        {
+          name: "removeFromCart",
+          description: "Remove one or more products from the cart.",
+          parameters: Schema.object({
+            properties: {
+              productsToRemove: Schema.array({
+                items: Schema.object({
+                  description: "A single product with its name.",
+                  properties: {
+                    name: Schema.string({
+                      description: "The name of the product.",
                     }),
                   },
-                  // Specify which properties within each product object are required
-                  required: ["name", "price"],
+                  required: ["name"],
                 }),
               }),
             },
@@ -129,6 +145,23 @@ export class AiService {
             ]);
             break;
           }
+          case "removeFromCart": {
+            console.log(functionCall.args);
+
+            const args = functionCall.args as { productsToRemove: { name: string }[] };
+
+            const functionResult = this.removeFromCart(args.productsToRemove);
+
+            result = await this.chat.sendMessage([
+              {
+                functionResponse: {
+                  name: functionCall.name,
+                  response: { numberOfProductsRemoved: functionResult },
+                },
+              }
+            ]);
+            break;
+          }
         }
       }
     }
@@ -143,9 +176,20 @@ export class AiService {
     return this.getProducts().length;
   }
 
-  addToCart(productsToAdd: Product[]) {
+  addToCart(productsToAdd: Product[]): number {
     for (let i = 0; i < productsToAdd.length; i++) {
-      this.products.addToCart(productsToAdd[i]);
+      this.products.addToCart(productsToAdd[i].name);
     }
+    return productsToAdd.length;
+  }
+
+  removeFromCart(productsToRemove: { name: string }[]): number {
+    let count = 0;
+    for (let i = 0; i < productsToRemove.length; i++) {
+      if (this.products.removeFromCart(productsToRemove[i].name)) {
+        count++;
+      }
+    }
+    return count;
   }
 }

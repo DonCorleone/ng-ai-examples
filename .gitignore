@@ -72,3 +72,4 @@ node_modules/
 .DS_Store
 vertex-ai-firebase-angular-example/src/environments/environment.ts
 vertex-ai-firebase-angular-example/src/environments/environment.development.ts
+vertex-ai-firebase-angular-example/dist

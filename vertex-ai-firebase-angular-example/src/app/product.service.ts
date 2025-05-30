@@ -41,7 +41,32 @@ export class ProductService {
     return this.productCart();
   }
 
-  addToCart(product: Product) {
+  /**
+   * Adds a product to the cart by product name. Looks up the product details from the products list.
+   * @param productName The name of the product to add
+   * @returns true if added, false if not found
+   */
+  addToCart(productName: string): boolean {
+    const product = this.products.find(p => p.name.toLowerCase() === productName.toLowerCase());
+    if (!product) {
+      return false;
+    }
     this.productCart.update((cart) => [...cart, product]);
+    return true;
+  }
+
+  removeFromCart(productName: string): boolean {
+    let removed = false;
+    this.productCart.update((cart) => {
+      const index = cart.findIndex(p => p.name.toLowerCase() === productName.toLowerCase());
+      if (index !== -1) {
+        removed = true;
+        const newCart = [...cart];
+        newCart.splice(index, 1);
+        return newCart;
+      }
+      return cart;
+    });
+    return removed;
   }
 }

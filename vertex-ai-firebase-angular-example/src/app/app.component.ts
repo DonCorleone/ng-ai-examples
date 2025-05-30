@@ -24,6 +24,19 @@ import { AiService } from "./ai.service";
         {{ products.productCartTotal() | currency }}
       </p>
     </header>
+    <section class="cart-overview">
+      <h2>Cart Overview</h2>
+      <ul>
+        @for (item of cartOverview(); track item.name) {
+          <li>
+            {{ item.name }} (x{{ item.quantity }}) - {{ item.price | currency }} each
+          </li>
+        }
+        @if (cartOverview().length === 0) {
+          <li>Your cart is empty.</li>
+        }
+      </ul>
+    </section>
     <section class="container">
       <section class="product-listing">
         <ul>
@@ -70,8 +83,23 @@ export class AppComponent {
   readonly products = inject(ProductService);
   readonly messageHistory = signal<Message[]>([]);
   readonly productList = signal<Product[]>([]);
-  
+
   private readonly chatHistoryContainer = viewChild<ElementRef>("chatHistoryContainer");
+
+  // Returns an array of cart items with name, price, and quantity
+  cartOverview() {
+    const cart = this.products.productCart();
+    const map = new Map<string, { name: string; price: number; quantity: number }>();
+    for (const item of cart) {
+      const key = item.name.toLowerCase();
+      if (map.has(key)) {
+        map.get(key)!.quantity++;
+      } else {
+        map.set(key, { name: item.name, price: item.price, quantity: 1 });
+      }
+    }
+    return Array.from(map.values());
+  }
 
   private readonly scrollEffect = effect(() => {
     if (this.messageHistory().length > 0) {
@@ -82,13 +110,13 @@ export class AppComponent {
       }
     }
   });
-  
+
   constructor() {
     this.productList.set(this.products.getProducts());
   }
 
   addToCart(product: Product) {
-    this.products.addToCart(product);
+    this.products.addToCart(product.name);
   }
 
   async submitMessage(msg: HTMLInputElement) {
