@@ -18,7 +18,7 @@ import { AiService } from "./ai.service";
   imports: [CurrencyPipe, NgOptimizedImage],
   template: `
     <header class="page-header">
-      <h1>NG-STORE</h1>
+      <h1>NG-STORE {{ products.filteredProductsList().length }} </h1>
       <p>
         Cart: {{ products.productCart().length }} - 
         {{ products.productCartTotal() | currency }}
@@ -40,7 +40,7 @@ import { AiService } from "./ai.service";
     <section class="container">
       <section class="product-listing">
         <ul>
-          @for(product of productList(); track product.name){
+          @for(product of products.filteredProductsList(); track product.name){
           <li class="product-card">
             <img class="product-image" [ngSrc]="product.image" alt="{{ product.name }}"width="150" height="214" />
             <div class="product-info">
@@ -113,6 +113,7 @@ export class AppComponent {
 
   constructor() {
     this.productList.set(this.products.getProducts());
+    this.products.filterCriteria.set([]);
   }
 
   addToCart(product: Product) {

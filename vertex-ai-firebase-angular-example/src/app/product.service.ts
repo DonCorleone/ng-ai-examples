@@ -9,7 +9,7 @@ import { computed, Injectable, signal } from "@angular/core";
 import { Product } from "./product";
 
 @Injectable({
-  providedIn: "root"
+  providedIn: "root",
 })
 export class ProductService {
   readonly productCart = signal<Product[]>([]);
@@ -19,6 +19,23 @@ export class ProductService {
       return total + product.price;
     }, 0);
   });
+
+  readonly filteredProductsList = computed(() => {
+    return this.products.filter((product) => {
+      if (this.filterCriteria().length === 0) {
+        return true; // No filter criteria, show all products
+      }
+      for (let i = 0; i < this.filterCriteria().length; i++) {
+        const criteria = this.filterCriteria()[i];
+        if (product.name.toLowerCase() == criteria.name.toLowerCase()) {
+          return true;
+        }
+      }
+      return false; // Product does not match any filter criteria
+    });
+  });
+
+  readonly filterCriteria = signal<Product[]>([]);
 
   private readonly products: Product[] = [
     { name: "Apple", price: 0.99, image: "products/apples.jpg" },
@@ -36,7 +53,7 @@ export class ProductService {
   getProducts(): Product[] {
     return this.products;
   }
-  
+
   getCart(): Product[] {
     return this.productCart();
   }
@@ -47,7 +64,9 @@ export class ProductService {
    * @returns true if added, false if not found
    */
   addToCart(productName: string): boolean {
-    const product = this.products.find(p => p.name.toLowerCase() === productName.toLowerCase());
+    const product = this.products.find(
+      (p) => p.name.toLowerCase() === productName.toLowerCase()
+    );
     if (!product) {
       return false;
     }
@@ -58,7 +77,9 @@ export class ProductService {
   removeFromCart(productName: string): boolean {
     let removed = false;
     this.productCart.update((cart) => {
-      const index = cart.findIndex(p => p.name.toLowerCase() === productName.toLowerCase());
+      const index = cart.findIndex(
+        (p) => p.name.toLowerCase() === productName.toLowerCase()
+      );
       if (index !== -1) {
         removed = true;
         const newCart = [...cart];
